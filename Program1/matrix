@@ -1,0 +1,23 @@
+#!/bin/bash
+
+echo "${0}"
+echo "${1}" #operation to perform -- REQ
+echo "${2}" #matrix file 
+
+case "${1}" in
+    dims)
+        echo "dims"
+        ;;
+    transpose)
+        echo "transpose"
+        ;;
+    mean)
+        echo "mean"
+        ;;
+    add)
+        echo "multiply"
+        ;;    
+    *)
+        echo "ERROR -- operation argument invalid" 
+        ;;
+esac

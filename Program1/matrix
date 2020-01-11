@@ -1,9 +1,37 @@
 #!/bin/bash
 
-echo "${0}"
-echo "${1}" #operation to perform -- REQ
-echo "${2}" #matrix file 
+#USAGE
+# matrix operation m1 m2
+# operation = ${1}
+# m1file = ${2}
+# m2file = ${3}
 
+#validate matrix:
+# -- ${2} is valid file ( use test ??)
+# -- OR stdin provides input
+# -- otherwise error and exit
+
+#STORE MATRIX 1
+#ideas for matrix reading:
+#mapfile < ${2}; echo "${MAPFILE[@]}"
+
+#check args and store matrices
+case "${1}" in
+    dims | transpose | mean)
+        #check arg count: $# 
+        #   --should be 1 (read from stdin) 
+        #   --or 2 (read from file ${2}) 
+        #   -- anything else, error
+        ;;
+    add | multiply)
+        #check arg count: $#
+        #   --should be 3 (read from files ${2} ${3})
+        #   --anything else, error
+        ;;
+esac
+
+
+#choose case based on operation arg. Error if false
 case "${1}" in
     dims)
         echo "dims"
@@ -15,7 +43,16 @@ case "${1}" in
         echo "mean"
         ;;
     add)
+        echo "add"
+        #if $# != 3 -- ERROR + EXIT
+        #validateMatrix ( ${3} )
+        #storeMatrix ( ${3} )
+        ;;    
+    multiply)
         echo "multiply"
+        #if $# != 3 -- ERROR + EXIT
+        #validateMatrix ( ${3} )
+        #storeMatrix ( ${3} )
         ;;    
     *)
         echo "ERROR -- operation argument invalid" 

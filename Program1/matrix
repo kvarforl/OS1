@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/bin/bash -e
+
+#redirect stdout to stderr
+#echo "error message:" 1>&2
+#exit 1
 
 #USAGE
 # matrix operation m1 m2
@@ -28,10 +32,14 @@ case "${1}" in
         #   --should be 3 (read from files ${2} ${3})
         #   --anything else, error
         ;;
+    *)
+        echo "Error: Invalid Op Arg"
+        ;;
 esac
 
 
 #choose case based on operation arg. Error if false
+#or, use func eval in hints
 case "${1}" in
     dims)
         echo "dims"

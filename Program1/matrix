@@ -47,8 +47,8 @@ case "${1}" in
             2)
                 echo "Read from file"
                 mapfile -t matrix1 < ${2} #store matrix in array
-                #m1rows="$(wc -l | cut -d " " -f 1)" #THIS LINE IS STRUGGLING
-                #echo "${m1rows}"
+                m1rows="$(wc -l ${2} | cut -d " " -f 1)" 
+                m1cols=$(($(wc -w ${2} | cut -d " " -f 1) / $m1rows)) #Total Entries / num Rows = numCols
                 ;;
             *)
                 echo "Error -- Too many Matrix arguments" 1>&2

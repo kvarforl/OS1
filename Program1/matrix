@@ -22,17 +22,33 @@
 #ind = (numcols * row) + col
 #echo ${<arrname>[@]} | cut -d " " -f $ind
 
+#rowind = $1, colind=$2
+function getFromM1()
+{
+    accessInd=$((m1cols * ${1} + ${2}))
+    echo $accessInd
+    echo $1
+    echo $2
+}
+
+function getFromM2()
+{
+    echo "TODO: get from matrix 2"
+}
+
 #check args and store matrices
 case "${1}" in
     dims | transpose | mean)
         case "$#" in
             1)
                 echo "Read from stdin"
+                mapfile -t matrix1 #store matrix in array 
                 ;;
             2)
                 echo "Read from file"
-                cat ${2} | mapfile matrix1
-                echo ${matrix1[@]}
+                mapfile -t matrix1 < ${2} #store matrix in array
+                #m1rows="$(wc -l | cut -d " " -f 1)" #THIS LINE IS STRUGGLING
+                #echo "${m1rows}"
                 ;;
             *)
                 echo "Error -- Too many Matrix arguments" 1>&2

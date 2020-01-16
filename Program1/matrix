@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-#redirect stdout to stderr
-#echo "error message:" 1>&2
-#exit 1
+#MATH HINTS:
+#i = $((9+9))
+#((i++))
 
 #USAGE
 # matrix operation m1 m2
@@ -15,54 +15,47 @@
 # -- OR stdin provides input
 # -- otherwise error and exit
 
-#STORE MATRIX 1
-#ideas for matrix reading:
-#mapfile < ${2}; echo "${MAPFILE[@]}"
+#STORE MATRIX 
+#cat <file> | mapfile <arrname>
+
+#ACCESS ELEM IN MATRIX
+#ind = (numcols * row) + col
+#echo ${<arrname>[@]} | cut -d " " -f $ind
 
 #check args and store matrices
 case "${1}" in
     dims | transpose | mean)
-        #check arg count: $# 
-        #   --should be 1 (read from stdin) 
-        #   --or 2 (read from file ${2}) 
-        #   -- anything else, error
+        case "$#" in
+            1)
+                echo "Read from stdin"
+                ;;
+            2)
+                echo "Read from file"
+                cat ${2} | mapfile matrix1
+                echo ${matrix1[@]}
+                ;;
+            *)
+                echo "Error -- Too many Matrix arguments" 1>&2
+                exit 1
+                ;;
+        esac
         ;;
     add | multiply)
-        #check arg count: $#
-        #   --should be 3 (read from files ${2} ${3})
-        #   --anything else, error
+        case "$#" in
+            3)
+                echo "Read from file (good args)"
+                ;;
+            *) 
+                echo "Error -- not enough matrix arguments for operation" 1>&2
+                exit 1
+                ;;
+        esac
         ;;
     *)
-        echo "Error: Invalid Op Arg"
+        echo "Error -- Invalid Operation Arg" 1>&2
+        exit 1
         ;;
 esac
 
 
-#choose case based on operation arg. Error if false
-#or, use func eval in hints
-case "${1}" in
-    dims)
-        echo "dims"
-        ;;
-    transpose)
-        echo "transpose"
-        ;;
-    mean)
-        echo "mean"
-        ;;
-    add)
-        echo "add"
-        #if $# != 3 -- ERROR + EXIT
-        #validateMatrix ( ${3} )
-        #storeMatrix ( ${3} )
-        ;;    
-    multiply)
-        echo "multiply"
-        #if $# != 3 -- ERROR + EXIT
-        #validateMatrix ( ${3} )
-        #storeMatrix ( ${3} )
-        ;;    
-    *)
-        echo "ERROR -- operation argument invalid" 
-        ;;
-esac
+#use func eval in hints to call funcs

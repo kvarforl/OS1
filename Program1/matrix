@@ -59,18 +59,33 @@ function checkFileValidity()
     fi
 }
 
+function dims()
+{
+    echo "$m1rows $m1cols"
+}
+
+function add()
+{ 
+    if [[ "$m1rows" != "$m2rows" || "$m1cols" != "$m2cols" ]]
+    then
+        echo "Error - Row dims do not match." 1>&2
+        exit 1
+    fi
+
+    echo "ToDo: Add func"
+}
 #check args and store matrices
 case "${1}" in
     dims | transpose | mean)
         case "$#" in
             1)
-                echo "Read from stdin"
+                #echo "Read from stdin"
                 mapfile matrix1 #store matrix in array 
                 setM1RowsCols
                 ;;
             2)
                 checkFileValidity ${2}
-                echo "Read from file"
+                #echo "Read from file"
                 mapfile -t matrix1 < ${2} #store matrix in array
                 setM1RowsCols
                 ;;
@@ -85,7 +100,7 @@ case "${1}" in
             3)
                 checkFileValidity ${2}
                 checkFileValidity ${3} 
-                echo "Read from file (good args)"
+                #echo "Read from file (good args)"
                 mapfile -t matrix1 < ${2} #store matrix in array
                 setM1RowsCols
 
@@ -104,5 +119,5 @@ case "${1}" in
         ;;
 esac
 
-
+$1 "${@:2}"
 #use func eval in hints to call funcs

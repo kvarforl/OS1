@@ -22,18 +22,41 @@
 #ind = (numcols * row) + col
 #echo ${<arrname>[@]} | cut -d " " -f $ind
 
-#rowind = $1, colind=$2
+#USAGE: pass <row indice> <col indice> to set entryM1 (indexed at 1 !!) 
 function getFromM1()
 {
-    accessInd=$((m1cols * ${1} + ${2}))
-    echo $accessInd
-    echo $1
-    echo $2
+    rowInd=$(( ${1} - 1 ))
+    accessInd=$((m1cols * $rowInd + ${2}))
+    entryM1="$(echo ${matrix1[@]} | cut -d " " -f $accessInd )"
+    echo $entryM1
 }
 
 function getFromM2()
 {
-    echo "TODO: get from matrix 2"
+    rowInd=$(( ${1} - 1 ))
+    accessInd=$((m2cols * $rowInd + ${2}))
+    entryM2="$(echo ${matrix2[@]} | cut -d " " -f $accessInd )"
+    echo $entryM2
+}
+
+function setM1RowsCols()
+{
+    m1rows=${#matrix1[@]}
+    m1cols="$(echo ${matrix1[0]} | wc -w | cut -d " " -f 1)"
+}
+
+function setM2RowsCols()
+{
+    m2rows=${#matrix2[@]}
+    m2cols="$(echo ${matrix2[0]} | wc -w | cut -d " " -f 1)"
+}
+
+function checkFileValidity()
+{
+    if [ ! -e ${1} ]; then
+        echo "Error -- file does not exist" 1>&2
+        exit 1
+    fi
 }
 
 #check args and store matrices
@@ -42,13 +65,14 @@ case "${1}" in
         case "$#" in
             1)
                 echo "Read from stdin"
-                mapfile -t matrix1 #store matrix in array 
+                mapfile matrix1 #store matrix in array 
+                setM1RowsCols
                 ;;
             2)
+                checkFileValidity ${2}
                 echo "Read from file"
                 mapfile -t matrix1 < ${2} #store matrix in array
-                m1rows="$(wc -l ${2} | cut -d " " -f 1)" 
-                m1cols=$(($(wc -w ${2} | cut -d " " -f 1) / $m1rows)) #Total Entries / num Rows = numCols
+                setM1RowsCols
                 ;;
             *)
                 echo "Error -- Too many Matrix arguments" 1>&2
@@ -59,7 +83,14 @@ case "${1}" in
     add | multiply)
         case "$#" in
             3)
+                checkFileValidity ${2}
+                checkFileValidity ${3} 
                 echo "Read from file (good args)"
+                mapfile -t matrix1 < ${2} #store matrix in array
+                setM1RowsCols
+
+                mapfile -t matrix2 < ${3} #store matrix in array
+                setM2RowsCols
                 ;;
             *) 
                 echo "Error -- not enough matrix arguments for operation" 1>&2

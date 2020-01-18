@@ -64,7 +64,11 @@ function add()
         do
             getFromM1 $i $j
             getFromM2 $i $j
-            printf "%s\t" $(($entryM1+$entryM2))
+            printf "%d" $(($entryM1+$entryM2))
+            if [ $j -ne $m2cols ]
+            then
+                printf "\t"
+            fi
         done
         printf "\n"
     done 

@@ -10,25 +10,12 @@
 # m1file = ${2}
 # m2file = ${3}
 
-#validate matrix:
-# -- ${2} is valid file ( use test ??)
-# -- OR stdin provides input
-# -- otherwise error and exit
-
-#STORE MATRIX 
-#cat <file> | mapfile <arrname>
-
-#ACCESS ELEM IN MATRIX
-#ind = (numcols * row) + col
-#echo ${<arrname>[@]} | cut -d " " -f $ind
-
 #USAGE: pass <row indice> <col indice> to set entryM1 (indexed at 1 !!) 
 function getFromM1()
 {
     rowInd=$(( ${1} - 1 ))
     accessInd=$((m1cols * $rowInd + ${2}))
     entryM1="$(echo ${matrix1[@]} | cut -d " " -f $accessInd )"
-    echo $entryM1
 }
 
 function getFromM2()
@@ -36,19 +23,18 @@ function getFromM2()
     rowInd=$(( ${1} - 1 ))
     accessInd=$((m2cols * $rowInd + ${2}))
     entryM2="$(echo ${matrix2[@]} | cut -d " " -f $accessInd )"
-    echo $entryM2
 }
 
 function setM1RowsCols()
 {
-    m1rows=${#matrix1[@]}
     m1cols="$(echo ${matrix1[0]} | wc -w | cut -d " " -f 1)"
+    m1rows="$(( $(echo ${matrix1[@]} | wc -w) / $m1cols ))"
 }
 
 function setM2RowsCols()
 {
-    m2rows=${#matrix2[@]}
     m2cols="$(echo ${matrix2[0]} | wc -w | cut -d " " -f 1)"
+    m2rows="$(( $(echo ${matrix2[@]} | wc -w) / $m2cols ))"
 }
 
 function checkFileValidity()
@@ -68,11 +54,21 @@ function add()
 { 
     if [[ "$m1rows" != "$m2rows" || "$m1cols" != "$m2cols" ]]
     then
-        echo "Error - Row dims do not match." 1>&2
+        echo "Error - add dims do not match." 1>&2
         exit 1
     fi
+    
+    for (( i=1;i<=$m1rows;i++ ))
+    do
+        for (( j=1;j<=$m2cols;j++ ))
+        do
+            getFromM1 $i $j
+            getFromM2 $i $j
+            printf "%s\t" $(($entryM1+$entryM2))
+        done
+        printf "\n"
+    done 
 
-    echo "ToDo: Add func"
 }
 #check args and store matrices
 case "${1}" in

@@ -60,6 +60,25 @@ function transpose()
     done
 }
 
+function mean()
+{
+    for (( i=1;i<=$m1cols;i++ ))
+    do  
+        sum=0
+        for (( j=1; j<=$m1rows;j++ ))
+        do
+            getFromM1 $j $i
+            sum=$(($sum + $entryM1))
+        done
+        printf "%d" $(( ($sum + ($m1rows/2)*( ($sum>0)*2-1 )) / $m1rows ))
+        if [ $i -ne $m1cols ]
+        then
+            printf "\t"
+        fi
+    done
+    printf "\n"
+}
+
 function add()
 { 
     if [[ "$m1rows" != "$m2rows" || "$m1cols" != "$m2cols" ]]

@@ -104,6 +104,35 @@ function add()
 
 }
 
+function multiply()
+{
+     if [[ "$m1cols" != "$m2rows" ]]
+     then
+         echo "Error - mult dims do not match." 1>&2
+         exit 1
+     fi
+ 
+     for (( i=1;i<=$m1rows;i++ ))
+     do
+         for (( j=1;j<=$m2cols;j++ ))
+         do
+             sum=0
+             for (( k=1;k<=$m2rows;k++ ))
+             do
+                 getFromM1 $i $k
+                 getFromM2 $k $j
+                 sum=$(( $sum + ($entryM1 * $entryM2) ))
+             done
+             printf "%s" $sum
+             if [ $j -ne $m2cols ]
+             then
+                 printf "\t"
+             fi
+         done
+         printf "\n"
+     done
+}
+
 #check args and store matrices
 case "${1}" in
     dims | transpose | mean)

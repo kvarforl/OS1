@@ -32,6 +32,83 @@ int getRandomRoom()
     return rand() % 7;    
 }
 
+//returns 1 if room has less than 6 existing connections
+//returns 0 if room has more than 6 existing connections
+int canAddConnectionFrom(int room, int* conn_counter)
+{
+    if(conn_counter[room] < 6)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+//returns 1 if y is already in x's adj list
+//returns 0 if not
+int connAlreadyExists(int x, int y, int conns[7][6])
+{
+    int i;
+    for(i=0;i<6;i++)
+    {
+        if(conns[x][i] == y)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//connects room x and y, bidirectionally
+//updates adjacency list and connection counts
+void connectRooms(int x, int y, int* conn_counter, int conns[][6])
+{
+    conns[x][conn_counter[x]] = y;
+    conns[y][conn_counter[y]] = x;
+    conn_counter[x] += 1;
+    conn_counter[y] += 1;
+}
+
+//finds two rooms that are able to connect!
+void addRandConn(int* conn_counter, int conns[][6])
+{
+    int A;
+    int B;
+    while(1)
+    {
+        A = getRandomRoom();
+        if(canAddConnectionFrom(A, conn_counter))
+        {
+            break;
+        }
+    }
+
+    do
+    {
+        B = getRandomRoom();
+    }
+    while(canAddConnectionFrom(B, conn_counter) == 0 || A == B || connAlreadyExists(A, B, conns) == 1);
+
+    connectRooms(A,B, conn_counter, conns);
+}
+
+//for debugging /sanity only; prints adj list with room nums
+void printAdjList(int* conn_counter, int conns[][6])
+{
+
+    int i;
+    int j;
+    for(i=0;i<7;i++)
+    {
+        printf("Room %i: ", i);
+        for(j=0;j<conn_counter[i];j++)
+        {
+            printf("%i ", conns[i][j]);
+        }
+        printf("\n");
+    }
+    
+}
+
 int main()
 {
     srand(time(0));
@@ -46,9 +123,25 @@ int main()
     }
     */
     
-
+    //create connection counter and adjacency list (with space for up to 6 cons)
     int connection_counter[7] = {0,0,0,0,0,0,0};
+    int connections[7][6] = {
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+        {-1, -1, -1, -1, -1, -1},
+    };
 
+    while(isGraphFull(connection_counter) == 0)
+    {
+        addRandConn(connection_counter, connections);
+    }
+    
+    printAdjList(connection_counter, connections);
+    
     return 0;
 }
 

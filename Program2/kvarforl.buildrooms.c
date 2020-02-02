@@ -109,6 +109,19 @@ void printAdjList(int* conn_counter, int conns[][6])
     
 }
 
+int indexHasBeenUsed(int x, int* used)
+{
+    int i;
+    for(i=0;i<7;i++)
+    {
+        if(used[i] == x)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int main()
 {
     srand(time(0));
@@ -142,6 +155,40 @@ int main()
     
     printAdjList(connection_counter, connections);
     
+    const char all_names[10][9] = {
+        "BAGEL",
+        "FRENCH",
+        "RYE",
+        "ROLL",
+        "PRETZEL",
+        "WHEAT",
+        "FOCA",
+        "CHALLAH",
+        "TOAST",
+        "SOUR"         
+    };
+
+    char* room_names[7] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+    int name_inds[7] = {-1, -1, -1, -1, -1, -1, -1};
+    int rand_ind;
+    int used_count = 0;
+    do
+    {
+        rand_ind = rand() % 10;
+        if(indexHasBeenUsed(rand_ind, name_inds) == 0)
+        {
+            name_inds[used_count] = rand_ind;
+            used_count += 1;
+        }    
+    }while(used_count < 7);
+
+    int i;
+    for(i=0;i<7;i++)
+    {
+        printf("%i ", name_inds[i]);
+    }
+    printf("\n");
+ 
     return 0;
 }
 

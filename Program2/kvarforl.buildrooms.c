@@ -109,6 +109,8 @@ void printAdjList(int* conn_counter, int conns[][6])
     
 }
 
+//returns true if x is in list of ints
+//otherwise returns false
 int indexHasBeenUsed(int x, int* used)
 {
     int i;
@@ -122,20 +124,48 @@ int indexHasBeenUsed(int x, int* used)
     return 0;
 }
 
+//writes file of room
+void writeFile(int room_ind, char* dirname, char* room_names[7], int* conn_counter, int conns[7][6] )
+{
+    FILE *fp;
+    char filepath[50];
+    sprintf(filepath, "%s/%s", dirname, room_names[room_ind]);
+
+    fp = fopen(filepath, "w+");
+    fprintf(fp, "ROOM NAME: %s\n", room_names[room_ind]);
+    int i;
+    for(i=0;i<conn_counter[room_ind];i++)
+    {
+        fprintf(fp, "CONNECTION %i: %s\n", i+1, room_names[conns[room_ind][i]]);
+    }
+    if(room_ind == 0)
+    {
+        fprintf(fp, "ROOM TYPE: START_ROOM\n");
+    }
+    else if (room_ind == 1)
+    {
+        fprintf(fp, "ROOM TYPE: END_ROOM\n");
+    }
+    else
+    {
+        fprintf(fp, "ROOM TYPE: MID_ROOM\n");
+    }
+    fclose(fp);    
+}
+
 int main()
 {
     srand(time(0));
+
     //create directory 
     char dirname[30];
     int pid = getpid();
     sprintf(dirname, "kvarforl.buildrooms.%i", pid);
-    /*
     if(mkdir(dirname, 0755) == -1)
     {
         printf("ERROR - could not make directory\n");
     }
-    */
-    
+
     //create connection counter and adjacency list (with space for up to 6 cons)
     int connection_counter[7] = {0,0,0,0,0,0,0};
     int connections[7][6] = {
@@ -148,14 +178,14 @@ int main()
         {-1, -1, -1, -1, -1, -1},
     };
 
+    //populate randomized graph structure
     while(isGraphFull(connection_counter) == 0)
     {
         addRandConn(connection_counter, connections);
     }
     
-    printAdjList(connection_counter, connections);
-    
-    const char all_names[10][9] = {
+    //hardcoded names to choose from and reference via pointer
+    char all_names[10][9] = {
         "BAGEL",
         "FRENCH",
         "RYE",
@@ -168,6 +198,7 @@ int main()
         "SOUR"         
     };
 
+    //narrow down to 7 random rooms, assigned to random index in randomized graph
     char* room_names[7] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL};
     int name_inds[7] = {-1, -1, -1, -1, -1, -1, -1};
     int rand_ind;
@@ -182,12 +213,16 @@ int main()
         }    
     }while(used_count < 7);
 
-    int i;
+    int i; //populate room_names with pointers
     for(i=0;i<7;i++)
     {
-        printf("%i ", name_inds[i]);
+        room_names[i] = all_names[name_inds[i]];
     }
-    printf("\n");
+
+    for(i=0;i<7;i++)//generate files
+    { 
+        writeFile(i, dirname, room_names, connection_counter, connections);
+    }
  
     return 0;
 }

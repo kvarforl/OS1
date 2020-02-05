@@ -126,7 +126,7 @@ void printRoom(char* room_name, char* dir_name, char conns[6][9], char* type)
     fclose(fp);
 }
 
-//returns 1 if valid, 0 if not.
+//returns 1 if input is valid, 0 if not.
 int getInput(char conns[6][9], char* response)
 {
     int i;
@@ -135,7 +135,6 @@ int getInput(char conns[6][9], char* response)
     response[strlen(response)-1] = '\0';//remove trailing newline char
     for(i=0;i<6;i++)
     {
-        printf("res: %s, conns[i]: %s\n", response, conns[i]);
         if(strcmp(response, conns[i]) == 0)
         {
             return 1;
@@ -148,16 +147,30 @@ int getInput(char conns[6][9], char* response)
 int main()
 {
     char* room_dir = getMostRecentRoomDir(); //const
-    //printf("Most recent dir: %s\n", room_dir);
     char* start_room = getStartRoom(room_dir); //const
-    //printf("Start: %s\n", start_room);
-    char conns[6][9] ={{"null"}, {"null"}, {"null"}, {"null"}, {"null"}, {"null"}};
+
+    char room[9];
     char room_type[20];
-    printRoom(start_room, room_dir, conns, room_type );
-    
-    char res[100];
-    int goodbad = getInput(conns, res);
-    printf("goodbad: %i\n", goodbad);
+    strcpy(room, start_room);//set start room
+
+    do{
+        char conns[6][9] ={{"null"}, {"null"}, {"null"}, {"null"}, {"null"}, {"null"}};//reset conns every room
+        printRoom(room, room_dir, conns, room_type );
+        if(strcmp(room_type, "END_ROOM") == 0)//check for win
+        {
+            break;
+        }
+        printf("WHERE TO? > ");
+
+        char res[100];
+        while(getInput(conns, res)== 0)
+        {
+            printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.\n\n");
+            printRoom(room, room_dir, conns, room_type);
+        }
+        strcpy(room, res); //move to next room
+    }
+    while(1); //play game until end room is reached
      
     return 0;
 }

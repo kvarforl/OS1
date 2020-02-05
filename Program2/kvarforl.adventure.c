@@ -91,12 +91,11 @@ void readFile(char* fpath, char* room_type)
     fclose(fp);
 }
 
-void printRoom(char* room_name, char* dir_name)
+void printRoom(char* room_name, char* dir_name, char conns[6][9], char* type)
 {
     char fpath[50];
     sprintf(fpath, "./%s/%s", dir_name, room_name);
     
-    char room_type[20];//where the present room type is being stored; consider returning
     FILE* fp;
     fp = fopen(fpath, "r");
     char room[9];
@@ -109,15 +108,17 @@ void printRoom(char* room_name, char* dir_name)
         }
         else if(counter == 1)
         {
+            strcpy(conns[0], room); //populate conns with first connected room
             printf("POSSIBLE CONNECTIONS: %s", room);
         }
         else if(strstr(room, "_ROOM") == NULL)
         {
+            strcpy(conns[counter-1], room); //counter is indexed at 1; we want it indexed at 0
             printf(", %s", room);
         }
         else
         {
-            strcpy(room_type, room);
+            strcpy(type, room);
         } 
         counter += 1;
     }
@@ -125,13 +126,38 @@ void printRoom(char* room_name, char* dir_name)
     fclose(fp);
 }
 
+//returns 1 if valid, 0 if not.
+int getInput(char conns[6][9], char* response)
+{
+    int i;
+    size_t res_size = 100;
+    getline(&response, &res_size, stdin);
+    response[strlen(response)-1] = '\0';//remove trailing newline char
+    for(i=0;i<6;i++)
+    {
+        printf("res: %s, conns[i]: %s\n", response, conns[i]);
+        if(strcmp(response, conns[i]) == 0)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 
 int main()
 {
-    char* room_dir = getMostRecentRoomDir(); 
+    char* room_dir = getMostRecentRoomDir(); //const
     //printf("Most recent dir: %s\n", room_dir);
-    char* start_room = getStartRoom(room_dir);
+    char* start_room = getStartRoom(room_dir); //const
     //printf("Start: %s\n", start_room);
-    printRoom(start_room, room_dir);
+    char conns[6][9] ={{"null"}, {"null"}, {"null"}, {"null"}, {"null"}, {"null"}};
+    char room_type[20];
+    printRoom(start_room, room_dir, conns, room_type );
+    
+    char res[100];
+    int goodbad = getInput(conns, res);
+    printf("goodbad: %i\n", goodbad);
+     
     return 0;
 }

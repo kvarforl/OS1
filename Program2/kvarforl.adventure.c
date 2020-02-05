@@ -151,6 +151,8 @@ int main()
 
     char room[9];
     char room_type[20];
+    int step_count = 0;
+    char path[200][9];//plz dont step more than 200 times; it will segfault. i know. u dont have that kind of time
     strcpy(room, start_room);//set start room
 
     do{
@@ -168,9 +170,21 @@ int main()
             printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.\n\n");
             printRoom(room, room_dir, conns, room_type);
         }
+        strcpy(path[step_count], res); //add room to path
+        step_count += 1;//inc step count
         strcpy(room, res); //move to next room
     }
     while(1); //play game until end room is reached
      
+    printf("\n\nYOU HAVE FOUND THE END ROOM. CONGRATULATIONS!\n");
+    printf("YOU TOOK %i STEPS. YOUR PATH TO VICTORY WAS:\n", step_count);
+    int i;
+    printf("%s ", path[0]);
+    for(i=1;i<step_count;i++)
+    {
+        printf("--> %s ", path[i]);
+    }
+    printf("\n");
+
     return 0;
 }

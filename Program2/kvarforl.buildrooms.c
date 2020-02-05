@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 //for dir creation
 #include <sys/stat.h>
@@ -138,8 +139,9 @@ void writeFile(int room_ind, char* dirname, char* room_names[7], int* conn_count
     {
         fprintf(fp, "CONNECTION %i: %s\n", i+1, room_names[conns[room_ind][i]]);
     }
-    if(room_ind == 0)
+    if(room_ind == 6)//create start_room last, with delay, for easy finding by adventure
     {
+        sleep(1);
         fprintf(fp, "ROOM TYPE: START_ROOM\n");
     }
     else if (room_ind == 1)

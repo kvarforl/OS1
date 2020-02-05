@@ -61,11 +61,77 @@ char* getStartRoom(char* room_dir)
     return champ;
 }
 
+void readFile(char* fpath, char* room_type)
+{
+    FILE* fp;
+    fp = fopen(fpath, "r");
+    char room[9];
+    int counter = 0;
+    while(fscanf(fp, "%*s %*s %s", room) == 1)
+    {
+        if(counter == 0)
+        {
+            printf("CURRENT LOCATION: %s\n", room);
+        }
+        else if(counter == 1)
+        {
+            printf("POSSIBLE CONNECTIONS: %s", room);
+        }
+        else if(strstr(room, "_ROOM") == NULL)
+        {
+            printf(", %s", room);
+        }
+        else
+        {
+            strcpy(room_type, room);
+        } 
+        counter += 1;
+    }
+    printf(".\n");
+    fclose(fp);
+}
+
+void printRoom(char* room_name, char* dir_name)
+{
+    char fpath[50];
+    sprintf(fpath, "./%s/%s", dir_name, room_name);
+    
+    char room_type[20];//where the present room type is being stored; consider returning
+    FILE* fp;
+    fp = fopen(fpath, "r");
+    char room[9];
+    int counter = 0;
+    while(fscanf(fp, "%*s %*s %s", room) == 1)
+    {
+        if(counter == 0)
+        {
+            printf("CURRENT LOCATION: %s\n", room);
+        }
+        else if(counter == 1)
+        {
+            printf("POSSIBLE CONNECTIONS: %s", room);
+        }
+        else if(strstr(room, "_ROOM") == NULL)
+        {
+            printf(", %s", room);
+        }
+        else
+        {
+            strcpy(room_type, room);
+        } 
+        counter += 1;
+    }
+    printf(".\n");
+    fclose(fp);
+}
+
+
 int main()
 {
     char* room_dir = getMostRecentRoomDir(); 
-    printf("Most recent dir: %s\n", room_dir);
+    //printf("Most recent dir: %s\n", room_dir);
     char* start_room = getStartRoom(room_dir);
-    printf("Start: %s\n", start_room);
+    //printf("Start: %s\n", start_room);
+    printRoom(start_room, room_dir);
     return 0;
 }

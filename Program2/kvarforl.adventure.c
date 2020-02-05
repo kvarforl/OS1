@@ -28,6 +28,7 @@ char* getMostRecentRoomDir()
         }
         else{ printf("ERROR on stat %s\n", dptr->d_name); }
     }
+    closedir(this_dir);
     
     return champ;
 }
@@ -57,6 +58,7 @@ char* getStartRoom(char* room_dir)
         }
         else{ printf("ERROR on stat %s: %s\n", fpath, strerror(errno)); }
     }
+    closedir(this_dir);
     
     return champ;
 }

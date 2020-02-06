@@ -3,6 +3,24 @@
 #include <dirent.h>
 #include <string.h>
 #include <errno.h>
+#include <pthread.h>
+#include <time.h>
+
+//function to be called by time thread
+void writeTimeToFile()
+{
+    time_t t;
+    struct tm* temp;
+    char now[50];
+    time(&t);
+    temp=localtime(&t);
+    strftime(now, sizeof(now), "%x - %I:%M%p", temp);//set now to be timestamp
+
+    FILE* fp;
+    fp = fopen("./currentTime.txt", "w+");
+    fprintf(fp,"%s",now);
+    fclose(fp);
+}
 
 char* getMostRecentRoomDir()
 {
@@ -148,6 +166,7 @@ int getInput(char conns[6][9], char* response)
 
 int main()
 {
+    
     char* room_dir = getMostRecentRoomDir(); //const
     char* start_room = getStartRoom(room_dir); //const
 

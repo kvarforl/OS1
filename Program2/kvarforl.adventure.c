@@ -106,7 +106,7 @@ void printRoom(char* room_name, char* dir_name, char conns[6][9], char* type)
     {
         if(counter == 0)
         {
-            printf("CURRENT LOCATION: %s\n", room);
+            printf("\nCURRENT LOCATION: %s\n", room);
         }
         else if(counter == 1)
         {
@@ -169,8 +169,9 @@ int main()
         char res[100];
         while(getInput(conns, res)== 0)
         {
-            printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.\n\n");
+            printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
             printRoom(room, room_dir, conns, room_type);
+            printf("WHERE TO? > ");
         }
         strcpy(path[step_count], res); //add room to path
         step_count += 1;//inc step count

@@ -6,23 +6,37 @@
 #include <pthread.h>
 #include <time.h>
 
+pthread_mutex_t lock;
 //function to be called by time thread
-void writeTimeToFile()
+void* writeTimeToFile(void* arg)
 {
+    pthread_mutex_lock(&lock);
     time_t t;
     struct tm* temp;
     char now[50];
     time(&t);
     temp=localtime(&t);
-    strftime(now, sizeof(now), "%x - %I:%M%p", temp);//set now to be timestamp
+    strftime(now, sizeof(now), "%x-%I:%M%p", temp);//set now to be timestamp
 
     FILE* fp;
     fp = fopen("./currentTime.txt", "w+");
     fprintf(fp,"%s",now);
     fclose(fp);
+    pthread_mutex_unlock(&lock);
+    return NULL; //making compiler happy + general laziness sorry world :)
 }
 
-char* getMostRecentRoomDir()
+void printTime()
+{
+    FILE* fp;
+    fp = fopen("./currentTime.txt", "r");
+    char time[20];
+    fscanf(fp, "%s", time);
+    fclose(fp);
+    printf("\n%s\n", time);
+}
+
+void getMostRecentRoomDir(char* room_dir)
 {
     DIR* this_dir = opendir(".");
     struct dirent* dptr;
@@ -48,7 +62,7 @@ char* getMostRecentRoomDir()
     }
     closedir(this_dir);
     
-    return champ;
+    strcpy(room_dir,champ);
 }
 
 char* getStartRoom(char* room_dir)
@@ -155,7 +169,7 @@ int getInput(char conns[6][9], char* response)
     response[strlen(response)-1] = '\0';//remove trailing newline char
     for(i=0;i<6;i++)
     {
-        if(strcmp(response, conns[i]) == 0)
+        if(strcmp(response, conns[i]) == 0 || strcmp(response, "time") == 0)
         {
             return 1;
         }
@@ -167,7 +181,9 @@ int getInput(char conns[6][9], char* response)
 int main()
 {
     
-    char* room_dir = getMostRecentRoomDir(); //const
+
+    char room_dir[50];
+    getMostRecentRoomDir(room_dir); //NOT const
     char* start_room = getStartRoom(room_dir); //const
 
     char room[9];
@@ -176,6 +192,7 @@ int main()
     char path[200][9];//plz dont step more than 200 times; it will segfault. i know. u dont have that kind of time
     strcpy(room, start_room);//set start room
 
+    pthread_mutex_init(&lock, NULL);
     do{
         char conns[6][9] ={{"null"}, {"null"}, {"null"}, {"null"}, {"null"}, {"null"}};//reset conns every room
         printRoom(room, room_dir, conns, room_type );
@@ -191,6 +208,16 @@ int main()
             printf("\nHUH? I DON'T UNDERSTAND THAT ROOM. TRY AGAIN.\n");
             printRoom(room, room_dir, conns, room_type);
             printf("WHERE TO? > ");
+        }
+        if(strcmp(res, "time") == 0)
+        {
+            //do time stuff here;
+            int resInt;
+            pthread_t timeThreadID;
+            resInt = pthread_create( &timeThreadID, NULL, writeTimeToFile, NULL);//start thread
+            resInt = pthread_join(timeThreadID, NULL);//wait for it to complete
+            printTime(); //call from main thread
+            continue;
         }
         strcpy(path[step_count], res); //add room to path
         step_count += 1;//inc step count
@@ -208,5 +235,6 @@ int main()
     }
     printf("\n");
 
+    pthread_mutex_destroy(&lock);
     return 0;
 }

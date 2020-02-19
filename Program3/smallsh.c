@@ -24,7 +24,11 @@ int getTokenizedInput(char* usr_input, char res[512][40])
         counter += 1;
         token = strtok(NULL, delim);
     }
-    return counter +1;
+    if(counter != 0) //want to return 0 (not 1) if no args provided
+    {
+        return counter +1;
+    }
+    return 0;
 }
 
 int main()
@@ -32,13 +36,33 @@ int main()
 
     char tokens[512][40];
     char input_str[2048];
-    int num_tokens = getTokenizedInput(input_str, tokens);
     
-    int i;
-    for(i=0;i<num_tokens;i++)
+    while(1)//for testing 
     {
-        printf("%s\n", tokens[i]);
-    }    
+        int num_tokens = getTokenizedInput(input_str, tokens);
+        if (num_tokens == 0 || tokens[0][0] == '#') //short circuit || to avoid seg fault
+        {
+            printf("comment or blank entered\n");
+            continue;
+        } 
+        
+        if(strcmp(tokens[0], "cd")==0)
+        {
+            printf("builtin cd\n");
+        }
+        else if(strcmp(tokens[0], "status")==0)
+        {
+            printf("builtin status\n");
+        }
+        else if(strcmp(tokens[0], "exit")==0)
+        {
+            printf("builtin exit\n");
+        } 
+        else
+        {    
+            printf("Other cmd: %s; check other tokens.\n", tokens[0]);
+        }
+    }
 
     return 0;
 }

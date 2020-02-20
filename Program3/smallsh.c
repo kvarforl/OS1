@@ -50,21 +50,24 @@ void builtinCd(char tokens[512][40], int num_tokens)
     }
 }
 
+
 int main()
 {
-
     char tokens[512][40];
     char input_str[2048];
-    
-    while(1)//for testing 
+    int shell_running = 1;    
+ 
+    while(shell_running)//for testing 
     {
         int num_tokens = getTokenizedInput(input_str, tokens);
+        //reprompt if blank or comment.
         if (num_tokens == 0 || tokens[0][0] == '#') //short circuit || to avoid seg fault
         {
             printf("comment or blank entered\n");
             continue;
         } 
         
+        //check for builtins
         if(strcmp(tokens[0], "cd")==0)
         {
             printf("builtin cd\n");
@@ -76,8 +79,11 @@ int main()
         }
         else if(strcmp(tokens[0], "exit")==0)
         {
-            printf("builtin exit\n");
+            printf("TODO: builtin exit\n");
+            printf("just exiting while loop for now.\n");
+            shell_running = 0;
         } 
+        //fork and exec; let bash handle it. 
         else
         {    
             printf("Other cmd: %s; check other tokens.\n", tokens[0]);

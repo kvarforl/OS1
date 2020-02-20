@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <unistd.h>
 
 //returns the number of tokens gotten from input
 //populates res (string arr) with each space delimited word of input
@@ -21,14 +22,32 @@ int getTokenizedInput(char* usr_input, char res[512][40])
     while(token != NULL)
     {
         strcpy(res[counter], token);
-        counter += 1;
+        counter += 1; //post increment keeps counter as num elems
         token = strtok(NULL, delim);
     }
-    if(counter != 0) //want to return 0 (not 1) if no args provided
+    return counter;
+}
+
+//changes directory to path; errors if invalid. DOES NOT SUPPORT ~. Does support .
+void builtinCd(char tokens[512][40], int num_tokens)
+{
+    if(num_tokens == 1)
     {
-        return counter +1;
+        char* home = getenv("HOME");
+        if (chdir(home) != 0)
+        { 
+            printf("Chdir to home failed\n");
+        }
+        printf("changed to home: %s\n", home);
     }
-    return 0;
+    else 
+    {
+        if (chdir(tokens[1]) != 0)
+        {
+            printf("Error: could not cd into %s\n", tokens[1]);
+            fflush(stdout);
+        }
+    }
 }
 
 int main()
@@ -49,6 +68,7 @@ int main()
         if(strcmp(tokens[0], "cd")==0)
         {
             printf("builtin cd\n");
+            builtinCd(tokens, num_tokens);
         }
         else if(strcmp(tokens[0], "status")==0)
         {

@@ -65,9 +65,67 @@ void builtinCd(char tokens[512][40], int num_tokens)
     }
 }
 
+void checkForRedirection(char tokens[512][40], int num_tokens)
+{
+    printf("numTokens: %i\n",num_tokens);
+    //TODO: add bounds checking so this doesn't segfault all over the place
+    char* pos1 = tokens[num_tokens-2]; //check 2nd to last token
+    char* fname1 = tokens[num_tokens-1];
+    char* pos2 = tokens[num_tokens-4]; //check 4th to last token
+    char* fname2 = tokens[num_tokens-3];
+    printf("pos1: %s fname1: %s\tpos2: %s fname2: %s\n", pos1, fname1, pos2, fname2);
+    /*
+    int InpFd;
+    if(strcmp(pos1,"<") == 0 )
+    {
+        InpFd = open(fname1, O_RDONLY);
+        pos1_used = 1;
+    }    
+    else if(strcmp(pos2,"<") == 0)
+    {
+        InpFd = open(fname2, O_RDONLY);
+        pos2_used = 1;
+    }
+   
+    int OutFd; 
+    if(strcmp(pos1,">") == 0 )
+    {
+        OutFd = open(fname1, O_WRONLY | O_CREAT | O_TRUNC);
+        pos1_used = 1;
+    }    
+    else if(strcmp(pos2,">") == 0)
+    {
+        OutFd = open(fname2, O_WRONLY | O_CREAT | O_TRUNC);
+        pos2_used = 1;
+    }
+    
+    if(OutFd != -1)
+    {
+        dup2(OutFd, STDOUT_FILENO);
+    }
+    else{printf("Error; could not open output file.\n");fflush(stdout);}
+
+    if(InpFd != -1)
+    {
+        dup2(InpFd, STDIN_FILENO);
+    }
+    else{printf("Error; could not open input file.\n");fflush(stdout);}
+
+    if(pos1_used) //decrement num_tokens by 2
+    {
+        num_tokens = num_tokens -2;
+    }
+    if(pos2_used) //decrement num_tokens by 2 more
+    {
+        num_tokens = num_tokens -2;
+    }    
+    */
+}
+
 void execute(char tokens[512][40], int num_tokens)
 {
     //TODO: handle < > here
+    checkForRedirection(tokens, num_tokens);
     char* args[num_tokens];
     int i;
     for(i=0;i<num_tokens;i++)

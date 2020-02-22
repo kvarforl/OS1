@@ -82,7 +82,7 @@ void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
         else
         {
             *status = 1;
-            printf("Error; could not open input file. Ignoring file redirection.\n");
+            printf("Error -- could not open input file. Ignoring file redirection.\n");
             fflush(stdout);
         }
     }
@@ -97,7 +97,7 @@ void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
         else
         {
             *status = 1;
-            printf("Error; could not open output file. Ignoring file redirection.\n");
+            printf("Error -- could not open output file. Ignoring file redirection.\n");
             fflush(stdout);
         }
     }
@@ -106,7 +106,6 @@ void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
 
 void execute(char tokens[512][40], int num_tokens, int* status)
 {
-    //TODO: handle < > here
     checkLastTwoTokens(tokens, &num_tokens, status);
     checkLastTwoTokens(tokens, &num_tokens, status);
     char* args[num_tokens];
@@ -118,8 +117,20 @@ void execute(char tokens[512][40], int num_tokens, int* status)
     args[num_tokens] = NULL;
     if(execvp(args[0],args)< 0)
     {
-        printf("Exec failed! Exiting. \n");
+        printf("Error -- exec failed! \n");
         exit(1);
+    }
+}
+
+void cleanZombies(int* status)
+{
+    int exitMethod;
+    pid_t dead = waitpid(-1, &exitMethod, WNOHANG);
+    if(dead != 0 && dead != -1)
+    {
+        *status = WEXITSTATUS(exitMethod);
+        printf("background process %i completed.\n", dead);
+        fflush(stdout);
     }
 }
 
@@ -135,6 +146,7 @@ int main()
 
     while(shell_running)//for testing 
     {
+        cleanZombies(&status);
         int num_tokens = getTokenizedInput(input_str, tokens);
         //reprompt if blank or comment.
         if (num_tokens == 0 || tokens[0][0] == '#') //short circuit || to avoid seg fault
@@ -186,8 +198,12 @@ int main()
                     break;
                 default: //parent process
                     //TODO: need to clean up zombie children
-                    waitpid(spawnPID, &childExitStatus, 0);
-                    status = WEXITSTATUS(childExitStatus);
+                    if(!run_in_background)
+                    {
+                        waitpid(spawnPID, &childExitStatus, 0);
+                        status = WEXITSTATUS(childExitStatus);
+                    }
+                    cleanZombies(&status);
                     break;
             }
         }

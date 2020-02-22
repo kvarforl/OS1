@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 //returns the number of tokens gotten from input
 //populates res (string arr) with each space delimited word of input
@@ -17,6 +19,17 @@ int getTokenizedInput(char* usr_input, char res[512][40])
     fflush(stdout);
     getline(&usr_input, &input_size, stdin);
     usr_input[strlen(usr_input)-1] = '\0'; //remove trailing newline char
+    
+    //handle expansion of $$ to PID; add to readme that $$ is only expanded once
+    char* expand_here = strstr(usr_input,"$$"); 
+    if(expand_here != NULL)
+    {
+        char* first_half = usr_input;
+        char second_half[50];
+        strcpy(second_half,expand_here+2); 
+        *expand_here = '\0';
+        sprintf(usr_input, "%s%i%s",first_half,getpid(),second_half);
+    }
 
     //populate result string array with tokenized input
     token = strtok(usr_input, delim);
@@ -54,6 +67,7 @@ void builtinCd(char tokens[512][40], int num_tokens)
 
 void execute(char tokens[512][40], int num_tokens)
 {
+    //TODO: handle < > here
     char* args[num_tokens];
     int i;
     for(i=0;i<num_tokens;i++)
@@ -68,12 +82,15 @@ void execute(char tokens[512][40], int num_tokens)
     }
 }
 
+//TODO: Handle signals
+
 int main()
 {
     char tokens[512][40];
     char input_str[2048];
     int shell_running = 1;    
     int status = 0;
+    int run_in_background = 0;
 
     while(shell_running)//for testing 
     {
@@ -104,22 +121,32 @@ int main()
         //fork and exec; let bash handle it. 
         else
         {    
-            //printf("Other cmd: %s; check other tokens.\n", tokens[0]);
+            //check for background
+            run_in_background = 0;
+            if (strcmp(tokens[num_tokens-1], "&") == 0)
+            {
+                num_tokens = num_tokens -1; //decrement num_tokens to omit trailing ampersand
+                run_in_background = 1;
+            } 
+
             int childExitStatus;
             pid_t spawnPID = fork();
             switch(spawnPID)
             {
-                case 0:
-                    //printf("In Child process: converting\n");
-                    //fflush(stdout);
+                case 0: //child process
+                    if(run_in_background)
+                    {
+                       printf("background process %i started\n",getpid());
+                       fflush(stdout);
+                       int null = open("/dev/null", O_WRONLY);
+                       dup2(null,1); //redirect stdout to null
+                    }
                     execute(tokens, num_tokens);
                     break;
-                default:
-                    //printf("PARENT(%d): Wait()ing for child(%d) to terminate\n", getpid(), spawnPID);
-                    //pid_t actualPid = waitpid(spawnPID, &childExitStatus, 0);
+                default: //parent process
+                    //TODO: need to clean up zombie children
                     waitpid(spawnPID, &childExitStatus, 0);
                     status = WEXITSTATUS(childExitStatus);
-                    //printf("PARENT(%d): Child(%d) terminated, Exiting!\n", getpid(), actualPid);
                     break;
             }
         }

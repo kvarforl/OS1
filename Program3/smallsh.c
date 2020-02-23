@@ -66,7 +66,8 @@ void builtinCd(char tokens[512][40], int num_tokens)
 }
 
 //function that checks for file io in the last two tokens; should be called twice back to back
-void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
+//returns 1 if error, 0 if not
+int checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
 {
     char* pos1 = tokens[(*num_tokens)-2]; //check 2nd to last token to be < or >
     char* fname1 = tokens[(*num_tokens)-1];//filename for inp or outp
@@ -78,12 +79,14 @@ void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
         if(fd != -1)
         {
             dup2(fd, STDIN_FILENO);
+            return 0;
         }
         else
         {
             *status = 1;
-            printf("Error -- could not open input file. Ignoring file redirection.\n");
+            printf("Error -- could not open input file.\n");
             fflush(stdout);
+            return 1;
         }
     }
     else if (strcmp(pos1, ">") == 0)
@@ -93,21 +96,29 @@ void checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
         if(fd != -1)
         {
             dup2(fd, STDOUT_FILENO);
+            return 0;
         }
         else
         {
             *status = 1;
-            printf("Error -- could not open output file. Ignoring file redirection.\n");
+            printf("Error -- could not open output file.\n");
             fflush(stdout);
+            return 1;
         }
     }
+    return 0;
 }
 
 
 void execute(char tokens[512][40], int num_tokens, int* status)
 {
-    checkLastTwoTokens(tokens, &num_tokens, status);
-    checkLastTwoTokens(tokens, &num_tokens, status);
+    int fileStat1 = checkLastTwoTokens(tokens, &num_tokens, status);
+    int fileStat2 = checkLastTwoTokens(tokens, &num_tokens, status);
+    if(fileStat1 || fileStat2 )
+    {
+        exit(1);
+    }    
+
     char* args[num_tokens];
     int i;
     for(i=0;i<num_tokens;i++)

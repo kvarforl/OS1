@@ -72,7 +72,7 @@ int checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
     char* pos1 = tokens[(*num_tokens)-2]; //check 2nd to last token to be < or >
     char* fname1 = tokens[(*num_tokens)-1];//filename for inp or outp
         
-    if(strcmp(pos1,"<") == 0 )
+    if(strcmp(pos1,"<") == 0 ) //check for input file
     {
         *num_tokens = (*num_tokens) - 2;
         int fd = open(fname1, O_RDONLY);
@@ -89,7 +89,7 @@ int checkLastTwoTokens(char tokens[512][40], int* num_tokens, int* status)
             return 1;
         }
     }
-    else if (strcmp(pos1, ">") == 0)
+    else if (strcmp(pos1, ">") == 0) //check for output file
     {
         *num_tokens = (*num_tokens) - 2;
         int fd = open(fname1, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -114,7 +114,7 @@ void execute(char tokens[512][40], int num_tokens, int* status)
 {
     int fileStat1 = checkLastTwoTokens(tokens, &num_tokens, status);
     int fileStat2 = checkLastTwoTokens(tokens, &num_tokens, status);
-    if(fileStat1 || fileStat2 )
+    if(fileStat1 || fileStat2 )//exit if bad input or output files
     {
         exit(1);
     }    
@@ -155,14 +155,14 @@ int main()
     int status = 0;
     int run_in_background = 0;
 
-    while(shell_running)//for testing 
+    while(shell_running) 
     {
         cleanZombies(&status);
         int num_tokens = getTokenizedInput(input_str, tokens);
         //reprompt if blank or comment.
         if (num_tokens == 0 || tokens[0][0] == '#') //short circuit || to avoid seg fault
         {
-            printf("comment or blank entered\n");
+            //printf("comment or blank entered\n");
             continue;
         } 
         
@@ -182,7 +182,7 @@ int main()
             printf("just exiting while loop for now.\n");
             shell_running = 0;
         } 
-        //fork and exec; let bash handle it. 
+        //fork and exec 
         else
         {    
             //check for background
@@ -208,7 +208,6 @@ int main()
                     execute(tokens, num_tokens, &status);
                     break;
                 default: //parent process
-                    //TODO: need to clean up zombie children
                     if(!run_in_background)
                     {
                         waitpid(spawnPID, &childExitStatus, 0);

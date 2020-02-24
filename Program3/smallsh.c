@@ -143,11 +143,19 @@ void execute(char tokens[512][40], int num_tokens, int* status)
 void cleanZombies(int* status)
 {
     int exitMethod;
+    int sig;
     pid_t dead = waitpid(-1, &exitMethod, WNOHANG);
     if(dead != 0 && dead != -1)
     {
         *status = WEXITSTATUS(exitMethod);
-        printf("background process %i completed.\n", dead);
+        printf("background process %i completed. ", dead);
+        fflush(stdout);
+        if(WIFSIGNALED(exitMethod) != 0)
+        {
+            printf("Killed by signal %i.", WTERMSIG(exitMethod));
+            fflush(stdout);
+        }
+        printf("\n");
         fflush(stdout);
     }
 }
@@ -200,7 +208,6 @@ int main()
         //check for builtins
         if(strcmp(tokens[0], "cd")==0)
         {
-            printf("builtin cd\n");
             builtinCd(tokens, num_tokens);
         }
         else if(strcmp(tokens[0], "status")==0)

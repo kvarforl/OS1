@@ -9,7 +9,6 @@
 #include <signal.h>
 
 int fg_only_mode; // a global, to avoid signal passing to sig functions.
-
 //returns the number of tokens gotten from input
 //populates res (string arr) with each space delimited word of input
 int getTokenizedInput(char* usr_input, char res[512][40]) 
@@ -143,7 +142,6 @@ void execute(char tokens[512][40], int num_tokens, int* status)
 void cleanZombies(int* status)
 {
     int exitMethod;
-    int sig;
     pid_t dead = waitpid(-1, &exitMethod, WNOHANG);
     if(dead != 0 && dead != -1)
     {
@@ -163,9 +161,6 @@ void cleanZombies(int* status)
         fflush(stdout);
     }
 }
-
-//TODO: Handle signals
-void catchSIGINT(int signo);//has foreground proc kill itself; parent prints out message
 
 //ignore and swipswap fg_only_mode
 void catchSIGTSTP(int signo)
@@ -190,6 +185,13 @@ int main()
     sigfillset(&SIGTSTP_action.sa_mask);
     SIGTSTP_action.sa_flags = 0;
     sigaction(SIGTSTP, &SIGTSTP_action, NULL);
+
+    //don't die on sigint (bg procs and parent)
+    struct sigaction SIGINT_action = {0};
+    SIGINT_action.sa_handler = SIG_IGN;
+    sigfillset(&SIGINT_action.sa_mask);
+    SIGINT_action.sa_flags = 0;
+    sigaction(SIGINT, &SIGINT_action, NULL);
 
     char tokens[512][40];
     char input_str[2048];
@@ -220,8 +222,6 @@ int main()
         }
         else if(strcmp(tokens[0], "exit")==0)
         {
-            //printf("TODO: builtin exit\n");
-            //printf("just exiting while loop for now.\n");
             shell_running = 0;
         } 
         //fork and exec 
@@ -246,6 +246,11 @@ int main()
                        fflush(stdout);
                        int null = open("/dev/null", O_WRONLY);
                        dup2(null,1); //redirect stdout to null
+                    }
+                    else//process is in foreground; die on sigint
+                    {
+                        SIGINT_action.sa_handler = SIG_DFL;
+                        sigaction(SIGINT, &SIGINT_action, NULL);
                     }
                     execute(tokens, num_tokens, &status);
                     break;

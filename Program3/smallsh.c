@@ -148,12 +148,16 @@ void cleanZombies(int* status)
     if(dead != 0 && dead != -1)
     {
         *status = WEXITSTATUS(exitMethod);
-        printf("background process %i completed. ", dead);
+        printf("background process %i completed. ", dead );
         fflush(stdout);
         if(WIFSIGNALED(exitMethod) != 0)
         {
             printf("Killed by signal %i.", WTERMSIG(exitMethod));
             fflush(stdout);
+        }
+        else
+        {
+            printf("Exit status %i. ", *status);
         }
         printf("\n");
         fflush(stdout);
@@ -216,8 +220,8 @@ int main()
         }
         else if(strcmp(tokens[0], "exit")==0)
         {
-            printf("TODO: builtin exit\n");
-            printf("just exiting while loop for now.\n");
+            //printf("TODO: builtin exit\n");
+            //printf("just exiting while loop for now.\n");
             shell_running = 0;
         } 
         //fork and exec 

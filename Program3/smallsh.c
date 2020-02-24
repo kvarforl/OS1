@@ -6,6 +6,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <signal.h>
+
+int fg_only_mode; // a global, to avoid signal passing to sig functions.
 
 //returns the number of tokens gotten from input
 //populates res (string arr) with each space delimited word of input
@@ -17,7 +20,11 @@ int getTokenizedInput(char* usr_input, char res[512][40])
 
     printf(":");
     fflush(stdout);
-    getline(&usr_input, &input_size, stdin);
+    int num_chars = getline(&usr_input, &input_size, stdin);
+    if(num_chars == -1)
+    {
+        clearerr(stdin);
+    }
     usr_input[strlen(usr_input)-1] = '\0'; //remove trailing newline char
     
     //handle expansion of $$ to PID; add to readme that $$ is only expanded once
@@ -146,14 +153,38 @@ void cleanZombies(int* status)
 }
 
 //TODO: Handle signals
+void catchSIGINT(int signo);//has foreground proc kill itself; parent prints out message
+
+//ignore and swipswap fg_only_mode
+void catchSIGTSTP(int signo)
+{
+    if(fg_only_mode)
+    {
+        char* msg = "\nExiting foreground only mode.\n";
+        write(STDOUT_FILENO, msg, 32);
+    }
+    else
+    {
+        char* msg = "\nEntering foreground only mode.\n";
+        write(STDOUT_FILENO, msg, 32);
+    }   
+    fg_only_mode = !fg_only_mode;//switch the state of foreground only mode
+}
 
 int main()
 {
+    struct sigaction SIGTSTP_action = {0};
+    SIGTSTP_action.sa_handler = catchSIGTSTP;
+    sigfillset(&SIGTSTP_action.sa_mask);
+    SIGTSTP_action.sa_flags = 0;
+    sigaction(SIGTSTP, &SIGTSTP_action, NULL);
+
     char tokens[512][40];
     char input_str[2048];
     int shell_running = 1;    
     int status = 0;
     int run_in_background = 0;
+    fg_only_mode = 0; // a global, to avoid signal passing to sig functions.
 
     while(shell_running) 
     {
@@ -198,7 +229,7 @@ int main()
             switch(spawnPID)
             {
                 case 0: //child process
-                    if(run_in_background)
+                    if(run_in_background && !fg_only_mode)
                     {
                        printf("background process %i started\n",getpid());
                        fflush(stdout);
@@ -208,7 +239,7 @@ int main()
                     execute(tokens, num_tokens, &status);
                     break;
                 default: //parent process
-                    if(!run_in_background)
+                    if(fg_only_mode || !run_in_background) //if not in background
                     {
                         waitpid(spawnPID, &childExitStatus, 0);
                         status = WEXITSTATUS(childExitStatus);

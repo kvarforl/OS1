@@ -233,16 +233,18 @@ int main()
             {
                 num_tokens = num_tokens -1; //decrement num_tokens to omit trailing ampersand
                 run_in_background = 1;
-            } 
-
+            }
             int childExitStatus;
             pid_t spawnPID = fork();
             switch(spawnPID)
             {
                 case 0: //child process
+                    
+                    SIGTSTP_action.sa_handler = SIG_IGN;//ignore SIGTSTP in children
+                    sigaction(SIGTSTP, &SIGTSTP_action, NULL);
                     if(run_in_background && !fg_only_mode)
                     {
-                       printf("background process %i started\n",getpid());
+                       printf("background process %i started\n:",getpid());
                        fflush(stdout);
                        int null = open("/dev/null", O_WRONLY);
                        dup2(null,1); //redirect stdout to null

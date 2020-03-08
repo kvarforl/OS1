@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Error -- bad characters in file.\n");
         return 1;
     }
-    sprintf(send_text, "%s*%s", msg, key);
+    sprintf(send_text, "%s*%s#", msg, key);
 
 
 	// Set up the server address struct
@@ -82,10 +82,24 @@ int main(int argc, char *argv[])
 		error("CLIENT: ERROR connecting");
 
 	// Send message to server
-	charsWritten = send(socketFD, send_text, strlen(send_text), 0); // Write to the server
-	if (charsWritten < 0) error("CLIENT: ERROR writing to socket");
-	if (charsWritten < strlen(buffer)) printf("CLIENT: WARNING: Not all data written to socket!\n");
-
+	char* send_ptr = send_text;
+    int bytesSent = 0;
+	while(bytesSent < strlen(send_text))
+	{
+        charsWritten = send(socketFD, send_ptr, strlen(send_text), 0); // Write to the server
+	    if (charsWritten < 0) error("CLIENT: ERROR writing to socket");
+	    if (charsWritten < strlen(send_text))
+        {
+             //printf("CLIENT: WARNING: Not all data written to socket!\n");
+             bytesSent += charsWritten;
+             send_ptr += charsWritten;
+        }
+        else
+        {
+            //printf("CLIENT: all chars written\n");
+            break;
+        }
+    }
 	// Get return message from server
 	memset(buffer, '\0', sizeof(buffer)); // Clear out the buffer again for reuse
 	charsRead = recv(socketFD, buffer, sizeof(buffer) - 1, 0); // Read data from the socket, leaving \0 at end

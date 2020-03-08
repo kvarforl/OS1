@@ -66,9 +66,22 @@ int main(int argc, char *argv[])
  
                 //break message from key on * pattern, and end message with #
 	            memset(buffer, '\0', 140000);
-	            charsRead = recv(establishedConnectionFD, buffer, 139999, 0); // Read the client's message from the socket
-	            if (charsRead < 0) error("ERROR reading from socket");
-                
+                char* ptr = buffer;
+                while(1)
+                {
+	                charsRead = recv(establishedConnectionFD, ptr, 139999, 0); // Read the client's message from the socket
+	                if (charsRead < 0) error("ERROR reading from socket");
+                    if(ptr[charsRead-1] != '#')
+                    {
+                        //printf("term # not received.\n");
+                        ptr += charsRead;
+                    }
+                    else
+                    {
+                        //printf("Found end #. \n");
+                        break;
+                    }
+                }
                 //split into message and key
                 memset(res, '\0', sizeof(res));
                 res[0] = '*';

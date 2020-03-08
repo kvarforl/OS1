@@ -7,19 +7,31 @@
 #include <netinet/in.h>
 #include <netdb.h> 
 
-void readKey(char key[70000], char* filename)
+void readFile(char key[70000], char* filename)
 {
-    //open key file and error handle chars; populate key var
-}
-void readMsg(char msg[70000], char* filename)
-{
-    //open msg file and error handle chars; populate msg var
+    FILE* fp;
+    fp = fopen(filename, "r");
+    if(fp != NULL)
+    {
+        fscanf(fp, "%[^\n]", key);
+    }
+    else
+    {
+        fprintf(stderr, "Error-- could not open %s for reading.\n", filename);
+    }
 }
 
 void error(const char *msg) { perror(msg); exit(0); } // Error function used for reporting issues
 
 int main(int argc, char *argv[])
 {
+    char key[70000];
+    char msg[70000];
+    char send_text[140000];
+    memset(key, '\0', sizeof(key));
+    memset(msg, '\0', sizeof(msg));
+    memset(send_text, '\0', sizeof(send_text));
+  
 
 	int socketFD, portNumber, charsWritten, charsRead;
 	struct sockaddr_in serverAddress;
@@ -27,6 +39,12 @@ int main(int argc, char *argv[])
 	char buffer[256];
     
 	if (argc != 4) { fprintf(stderr,"USAGE: %s plaintext key port\n", argv[0]); exit(0); } // Check usage & args
+    
+    readFile(msg, argv[1]);
+    readFile(key, argv[2]);
+    sprintf(send_text, "%s*%s", msg, key);
+    printf("to send, one newline added: %s\n", send_text);
+/*
 
 	// Set up the server address struct
 	memset((char*)&serverAddress, '\0', sizeof(serverAddress)); // Clear out the address struct
@@ -63,5 +81,6 @@ int main(int argc, char *argv[])
 	printf("CLIENT: I received this from the server: \"%s\"\n", buffer);
 
 	close(socketFD); // Close the socket
+*/
 	return 0;
 }

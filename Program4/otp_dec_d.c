@@ -20,7 +20,7 @@ int mod(int num, int m)
     return res;
 }
 
-void encrypt(char text[140000], char* key, char res[70000])
+void decrypt(char text[140000], char* key, char res[70000])
 {
     if(strlen(text) > strlen(key))
     {
@@ -39,7 +39,7 @@ void encrypt(char text[140000], char* key, char res[70000])
         if( t < 0) t = 26;
         if( k < 0) k = 26;
 
-        int num = t+k;
+        int num = t-k;
         num = mod(num, 27);
         if( num == 26)
         {
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
                 if(split != NULL)
                 {
                     split[0] = '\0';
-                    encrypt(buffer, split+1, res);
+                    decrypt(buffer, split+1, res);
                 }
                 else{ printf("MUST INCLUDE * TO SPLIT MSG AND KEY\n");}
                 

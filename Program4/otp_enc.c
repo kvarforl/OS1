@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Error -- bad characters in file.\n");
         return 1;
     }
-    sprintf(send_text, "%s*%s#", msg, key);
+    sprintf(send_text, "&%s*%s#", msg, key);
 
 
 	// Set up the server address struct

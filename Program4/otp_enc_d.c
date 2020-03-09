@@ -20,7 +20,7 @@ int mod(int num, int m)
     return res;
 }
 
-void encrypt(char text[140000], char* key, char res[70000])
+void encrypt(char* text, char* key, char res[70000])
 {
     if(strlen(text) > strlen(key))
     {
@@ -108,23 +108,31 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                        //printf("Found end #. \n");
+                        //printf("Found end #\n");
                         break;
                     }
                 }
-                buffer[strlen(buffer)-1] = '\0'; //get rid of end #
-                //split into message and key
                 memset(res, '\0', sizeof(res));
                 res[0] = '*';
-                char* split = strstr(buffer, "*");
-                if(split != NULL)
+                if(buffer[0] != '&') //& is symbol coming from enc
                 {
-                    split[0] = '\0';
-                    encrypt(buffer, split+1, res);
+                    fprintf(stderr, "Error -- only otp_enc can connect to opt_enc_d.\n");
+                    //if it's not from enc, stop;
+                } 
+                else
+                {
+                    buffer[strlen(buffer)-1] = '\0'; //get rid of end #
+                    char* start_ptr = buffer + 1; //move start pointer forward one to ignore beginning &
+                    //split into message and key
+                    char* split = strstr(buffer, "*");
+                    if(split != NULL)
+                    {
+                        split[0] = '\0';
+                        encrypt(start_ptr, split+1, res);
+                    }
+                    else{ printf("MUST INCLUDE * TO SPLIT MSG AND KEY\n");}
                 }
-                else{ printf("MUST INCLUDE * TO SPLIT MSG AND KEY\n");}
                 
-	            
                 // Send a Success message back to the client
 	            charsRead = send(establishedConnectionFD, res, strlen(res), 0); // Send success back
 	            if (charsRead < 0) error("ERROR writing to socket");
